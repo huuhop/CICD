@@ -16,19 +16,17 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    // Build Docker image từ Dockerfile
-                    sh 'docker build -t ${DOCKER_IMAGE}:${BUILD_NUMBER} .'
+                    sh 'start /B docker build -t ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${BUILD_NUMBER} .'
                 }
             }
         }
         stage('Push Docker Image') {
             steps {
                 script {
-                    // Đăng nhập vào Docker registry (có thể cần credentials cho Docker Hub)
                     withCredentials([usernamePassword(credentialsId: '${DOCKER_CREDENTIALSID}', passwordVariable: '${DOCKER_PASS}', usernameVariable: '${DOCKER_USER}')]) {
                         sh '''
                             echo $DOCKER_PASS | docker login --username $DOCKER_USER --password-stdin
-                            docker push ${DOCKER_IMAGE}:${BUILD_NUMBER}
+                            start /B docker push ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${BUILD_NUMBER}
                         '''
                     }
                 }
@@ -37,20 +35,12 @@ pipeline {
          stage('Deploy') {
             steps {
                 script {
-                    // Chạy Docker container để triển khai ứng dụng
                     sh '''
-                        docker run -d -p 3000:3000 ${DOCKER_IMAGE}:${BUILD_NUMBER}
+                        start /B docker run -d -p 3000:3000 ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${BUILD_NUMBER}
                     '''
                 }
             }
         }
-        // stage('Build Stage') {
-        //     steps {
-        //          // This step should not normally be used in your script. Consult the inline help for details.
-        //         withDockerRegistry(credentialsId: 'docker-hub', url: 'https://index.docker.io/v1/') {
-        //         }
-        //     }
-        // }
     }
     post {
         success {
