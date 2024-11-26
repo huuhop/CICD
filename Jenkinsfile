@@ -13,7 +13,7 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    sh """
+                    bat """
                         docker build -t $DOCKER_REGISTRY/$DOCKER_IMAGE:$BUILD_NUMBER .
                     """
                 }
@@ -23,7 +23,7 @@ pipeline {
             steps {
                 script {
                     withCredentials([usernamePassword(credentialsId: 'docker-hub-1', passwordVariable: 'DOCKER_PASS', usernameVariable: 'DOCKER_USER')]) {
-                        sh """
+                        bat """
                             echo \$DOCKER_PASS | docker login --username \$DOCKER_USER --password-stdin
                             docker push $DOCKER_REGISTRY/$DOCKER_IMAGE:$BUILD_NUMBER
                         """
@@ -34,7 +34,7 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
-                    sh """
+                    bat """
                         docker run -d -p 3000:3000 $DOCKER_REGISTRY/$DOCKER_IMAGE:$BUILD_NUMBER
                     """
                 }
