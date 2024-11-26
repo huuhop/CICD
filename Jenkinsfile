@@ -10,6 +10,13 @@ pipeline {
                 git 'https://github.com/huuhop/CICD.git'
             }
         }
+        stage('Check Docker') {
+            steps {
+                script {
+                    bat 'docker info'
+                }
+            }
+        }
         stage('Build Docker Image') {
             steps {
                 script {
@@ -31,15 +38,15 @@ pipeline {
                 }
             }
         }
-        stage('Deploy') {
-            steps {
-                script {
-                    bat """
-                        docker run -d -p 3000:3000 $DOCKER_REGISTRY/$DOCKER_IMAGE:$BUILD_NUMBER
-                    """
-                }
-            }
-        }
+        // stage('Deploy') {
+        //     steps {
+        //         script {
+        //             bat """
+        //                 docker run -d -p 3000:3000 $DOCKER_REGISTRY/$DOCKER_IMAGE:$BUILD_NUMBER
+        //             """
+        //         }
+        //     }
+        // }
     }
     post {
         success {
