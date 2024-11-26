@@ -44,14 +44,6 @@ pipeline {
                 }
             }
         }
-         post {
-            success {
-                echo 'Pipeline hoàn tất thành công!'
-            }
-            failure {
-                echo 'Pipeline gặp lỗi!'
-            }
-        }
         // stage('Build Stage') {
         //     steps {
         //          // This step should not normally be used in your script. Consult the inline help for details.
@@ -59,5 +51,13 @@ pipeline {
         //         }
         //     }
         // }
+    }
+    post {
+        success {
+            echo 'Pipeline hoàn tất thành công!'
+        }
+        failure {
+            echo 'Pipeline gặp lỗi!'
+        }
     }
 }
