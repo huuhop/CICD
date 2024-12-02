@@ -29,24 +29,24 @@ pipeline {
         stage('Push Docker Image') {
             steps {
                 script {
-                    withCredentials([usernamePassword(credentialsId: 'docker-hub-1', passwordVariable: 'DOCKER_PASS', usernameVariable: 'DOCKER_USER')]) {
+                    withCredentials([usernamePassword(credentialsId: 'docker-hub-1', passwordVariable: '123456789Q!!!!', usernameVariable: 'daniel')]) {
                         bat """
-                            echo \$DOCKER_PASS | docker login --username \$DOCKER_USER --password-stdin
+                            echo  docker login
                             docker push $DOCKER_REGISTRY/$DOCKER_IMAGE:$BUILD_NUMBER
                         """
                     }
                 }
             }
         }
-        // stage('Deploy') {
-        //     steps {
-        //         script {
-        //             bat """
-        //                 docker run -d -p 3000:3000 $DOCKER_REGISTRY/$DOCKER_IMAGE:$BUILD_NUMBER
-        //             """
-        //         }
-        //     }
-        // }
+        stage('Deploy') {
+            steps {
+                script {
+                    bat """
+                        docker run -d -p 3000:3000 $DOCKER_REGISTRY/$DOCKER_IMAGE:$BUILD_NUMBER
+                    """
+                }
+            }
+        }
     }
     post {
         success {
