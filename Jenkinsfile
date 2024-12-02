@@ -4,6 +4,7 @@ pipeline {
         DOCKER_IMAGE = 'nestjs-app'
         DOCKER_REGISTRY = 'docker.io'
         DOCKER_USER = 'huuhop1'
+        DOCKER_PASS = 'docker-hub-this-pass'
     }
     stages {
         stage('Clone') {
