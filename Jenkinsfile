@@ -26,7 +26,10 @@ pipeline {
                 script {
                     withCredentials([usernamePassword(credentialsId: 'docker-hub-5', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                         bat """
-                            echo 123456789Q! | docker login --username %DOCKER_USER% --password-stdin
+                            echo "DOCKER_USER=%DOCKER_USER%"
+                            echo "DOCKER_PASS=%DOCKER_PASS%"
+                            echo %DOCKER_PASS% | docker login --username %DOCKER_USER% --password-stdin
+                            echo 111111111
                             docker push %DOCKER_REGISTRY%/%DOCKER_USER%/%DOCKER_IMAGE%:%BUILD_NUMBER%
                         """
                     }
