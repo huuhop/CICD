@@ -4,7 +4,7 @@ pipeline {
         DOCKER_IMAGE = 'nestjs-app'
         DOCKER_REGISTRY = 'docker.io'
         DOCKER_USER = 'huuhop1'
-        DOCKER_PASS = 'docker-hub-this-pass'
+        DOCKER_PASS = '123456789Q!'
     }
     stages {
         stage('Clone') {
@@ -26,7 +26,7 @@ pipeline {
                 script {
                     withCredentials([usernamePassword(credentialsId: 'docker-hub-5', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                         bat """
-                            echo %DOCKER_PASS% | docker login --username %DOCKER_USER% --password-stdin
+                            echo 123456789Q! | docker login --username %DOCKER_USER% --password-stdin
                             docker push %DOCKER_REGISTRY%/%DOCKER_USER%/%DOCKER_IMAGE%:%BUILD_NUMBER%
                         """
                     }
