@@ -3,21 +3,27 @@ pipeline {
     environment {
         DOCKER_IMAGE = 'nestjs-app'
         DOCKER_REGISTRY = 'docker.io'
-        DOCKER_USER = 'huuhop1'
-        DOCKER_PASS = '123456789Q!'
+        DOCKER_USER = 'huuhop1' 
+        DOCKER_PASS = '123456789Q!' // Đảm bảo rằng đây là mật khẩu thật trong Jenkins credentials
     }
     stages {
         stage('Clone') {
             steps {
-                git 'https://github.com/huuhop/CICD.git'
+                script {
+                    // Clone repository using PowerShell
+                    powershell '''
+                        git clone https://github.com/huuhop/CICD.git
+                    '''
+                }
             }
         }
         stage('Build Docker Image') {
             steps {
                 script {
-                    bat """
-                        docker build -t %DOCKER_REGISTRY%/%DOCKER_USER%/%DOCKER_IMAGE%:%BUILD_NUMBER% .
-                    """
+                    // Build Docker image using PowerShell
+                    powershell '''
+                        docker build -t $env:DOCKER_REGISTRY/$env:DOCKER_USER/$env:DOCKER_IMAGE:$env:BUILD_NUMBER .
+                    '''
                 }
             }
         }
@@ -25,13 +31,12 @@ pipeline {
             steps {
                 script {
                     withCredentials([usernamePassword(credentialsId: 'docker-hub-5', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                        bat """
-                            echo "DOCKER_USER=%DOCKER_USER%"
-                            echo "DOCKER_PASS=%DOCKER_PASS%"
-                            echo %DOCKER_PASS% | docker login --username %DOCKER_USER% --password-stdin
-                            echo 111111111
-                            docker push %DOCKER_REGISTRY%/%DOCKER_USER%/%DOCKER_IMAGE%:%BUILD_NUMBER%
-                        """
+                        powershell '''
+                            echo "Logging in to Docker Hub with username: $env:DOCKER_USER"
+                            echo $env:DOCKER_PASS | docker login --username $env:DOCKER_USER --password-stdin
+                            echo "Pushing Docker image $env:DOCKER_REGISTRY/$env:DOCKER_USER/$env:DOCKER_IMAGE:$env:BUILD_NUMBER"
+                            docker push $env:DOCKER_REGISTRY/$env:DOCKER_USER/$env:DOCKER_IMAGE:$env:BUILD_NUMBER
+                        '''
                     }
                 }
             }
@@ -39,9 +44,10 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
-                    bat """
-                        docker run -d -p 3000:3000 %DOCKER_REGISTRY%/%DOCKER_USER%/%DOCKER_IMAGE%:%BUILD_NUMBER%
-                    """
+                    // Deploy Docker container using PowerShell
+                    powershell '''
+                        docker run -d -p 3000:3000 $env:DOCKER_REGISTRY/$env:DOCKER_USER/$env:DOCKER_IMAGE:$env:BUILD_NUMBER
+                    '''
                 }
             }
         }
