@@ -10,18 +10,15 @@ pipeline {
         stage('Clone') {
             steps {
                 script {
-                    // Clone repository using PowerShell
-                    powershell '''
-                        git clone https://github.com/huuhop/CICD.git
-                    '''
+                    git 'https://github.com/huuhop/CICD.git'
                 }
             }
         }
         stage('Build Docker Image') {
             steps {
                 script {
-                    // Build Docker image using PowerShell
                     powershell '''
+                        echo "Building Docker image for $env:DOCKER_IMAGE"
                         docker build -t $env:DOCKER_REGISTRY/$env:DOCKER_USER/$env:DOCKER_IMAGE:$env:BUILD_NUMBER .
                     '''
                 }
@@ -30,11 +27,13 @@ pipeline {
         stage('Push Docker Image') {
             steps {
                 script {
-                    withCredentials([usernamePassword(credentialsId: 'docker-hub-5', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                         powershell '''
-                            echo "Logging in to Docker Hub with username: $env:DOCKER_USER"
+                            echo "DOCKER_USER: $env:DOCKER_USER"
+                            echo "DOCKER_PASS: $env:DOCKER_PASS"
+                             echo "Logging in to Docker Hub"
+                            echo "Logging in to Docker Hub"
                             echo $env:DOCKER_PASS | docker login --username $env:DOCKER_USER --password-stdin
-                            echo "Pushing Docker image $env:DOCKER_REGISTRY/$env:DOCKER_USER/$env:DOCKER_IMAGE:$env:BUILD_NUMBER"
                             docker push $env:DOCKER_REGISTRY/$env:DOCKER_USER/$env:DOCKER_IMAGE:$env:BUILD_NUMBER
                         '''
                     }
@@ -44,8 +43,8 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
-                    // Deploy Docker container using PowerShell
                     powershell '''
+                        echo "Deploying Docker container"
                         docker run -d -p 3000:3000 $env:DOCKER_REGISTRY/$env:DOCKER_USER/$env:DOCKER_IMAGE:$env:BUILD_NUMBER
                     '''
                 }
