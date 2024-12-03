@@ -3,14 +3,14 @@ pipeline {
     environment {
         DOCKER_IMAGE = 'nestjs-app'
         DOCKER_REGISTRY = 'docker.io'
-        DOCKER_USER = 'huuhop1' 
-        DOCKER_PASS = '123456789Q!' // Đảm bảo rằng đây là mật khẩu thật trong Jenkins credentials
+        DOCKER_USER = 'huuhop1'  // Username là một giá trị cố định
+        // DOCKER_PASS 123456789Q! được lấy từ Jenkins credentials
     }
     stages {
         stage('Clone') {
             steps {
                 script {
-                    git 'https://github.com/huuhop/CICD.git'
+                    git 'https://github.com/huuhop/CICD.git' 
                 }
             }
         }
@@ -18,8 +18,8 @@ pipeline {
             steps {
                 script {
                     powershell '''
-                        echo "Building Docker image for $env:DOCKER_IMAGE"
-                        docker build -t $env:DOCKER_REGISTRY/$env:DOCKER_USER/$env:DOCKER_IMAGE:$env:BUILD_NUMBER .
+                        echo "Building Docker image for $DOCKER_IMAGE"
+                        docker build -t $DOCKER_REGISTRY/$DOCKER_USER/$DOCKER_IMAGE:$BUILD_NUMBER .
                     '''
                 }
             }
@@ -29,12 +29,9 @@ pipeline {
                 script {
                     withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                         powershell '''
-                            echo "DOCKER_USER: $env:DOCKER_USER"
-                            echo "DOCKER_PASS: $env:DOCKER_PASS"
-                             echo "Logging in to Docker Hub"
                             echo "Logging in to Docker Hub"
-                            echo $env:DOCKER_PASS | docker login --username $env:DOCKER_USER --password-stdin
-                            docker push $env:DOCKER_REGISTRY/$env:DOCKER_USER/$env:DOCKER_IMAGE:$env:BUILD_NUMBER
+                            docker login --username $DOCKER_USER --password $DOCKER_PASS
+                            docker push $DOCKER_REGISTRY/$DOCKER_USER/$DOCKER_IMAGE:$BUILD_NUMBER
                         '''
                     }
                 }
@@ -45,7 +42,7 @@ pipeline {
                 script {
                     powershell '''
                         echo "Deploying Docker container"
-                        docker run -d -p 3000:3000 $env:DOCKER_REGISTRY/$env:DOCKER_USER/$env:DOCKER_IMAGE:$env:BUILD_NUMBER
+                        docker run -d -p 3000:3000 $DOCKER_REGISTRY/$DOCKER_USER/$DOCKER_IMAGE:$BUILD_NUMBER
                     '''
                 }
             }
