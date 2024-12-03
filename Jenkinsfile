@@ -4,7 +4,7 @@ pipeline {
         DOCKER_IMAGE = 'nestjs-app'
         DOCKER_REGISTRY = 'docker.io'
         DOCKER_USER = 'huuhop1'  // Username là một giá trị cố định
-        // DOCKER_PASS 123456789Q! được lấy từ Jenkins credentials
+        // DOCKER_PASS được lấy từ Jenkins credentials
     }
     stages {
         stage('Clone') {
@@ -19,7 +19,7 @@ pipeline {
                 script {
                     powershell '''
                         echo "Building Docker image for $DOCKER_IMAGE"
-                        docker build -t $DOCKER_REGISTRY/$DOCKER_USER/$DOCKER_IMAGE:$BUILD_NUMBER .
+                        docker build -t "${DOCKER_REGISTRY}/${DOCKER_USER}/${DOCKER_IMAGE}:${BUILD_NUMBER}" .
                     '''
                 }
             }
@@ -31,7 +31,7 @@ pipeline {
                         powershell '''
                             echo "Logging in to Docker Hub"
                             docker login --username $DOCKER_USER --password $DOCKER_PASS
-                            docker push $DOCKER_REGISTRY/$DOCKER_USER/$DOCKER_IMAGE:$BUILD_NUMBER
+                            docker push "${DOCKER_REGISTRY}/${DOCKER_USER}/${DOCKER_IMAGE}:${BUILD_NUMBER}"
                         '''
                     }
                 }
@@ -42,7 +42,7 @@ pipeline {
                 script {
                     powershell '''
                         echo "Deploying Docker container"
-                        docker run -d -p 3000:3000 $DOCKER_REGISTRY/$DOCKER_USER/$DOCKER_IMAGE:$BUILD_NUMBER
+                        docker run -d -p 3000:3000 "${DOCKER_REGISTRY}/${DOCKER_USER}/${DOCKER_IMAGE}:${BUILD_NUMBER}"
                     '''
                 }
             }
