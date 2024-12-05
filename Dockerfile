@@ -1,5 +1,5 @@
-# Sử dụng node:16-alpine để giảm kích thước image
-FROM node:16-alpine
+# Sử dụng node:16 hoặc node:18 làm base image (Node.js v22.11.0 có thể không phổ biến trong Docker Hub nên bạn có thể sử dụng phiên bản ổn định gần nhất)
+FROM node:16
 
 # Thiết lập thư mục làm việc trong container
 WORKDIR /usr/src/app
@@ -10,7 +10,7 @@ COPY package*.json ./
 # Cài đặt dependencies
 RUN npm install
 
-# Sao chép mã nguồn vào container (sử dụng .dockerignore để loại trừ file không cần thiết)
+# Sao chép toàn bộ mã nguồn vào container
 COPY . .
 
 # Build ứng dụng NestJS

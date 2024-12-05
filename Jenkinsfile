@@ -47,11 +47,22 @@ pipeline {
                 script {
                     powershell '''
                         echo "SSH into EC2 and pull Docker image"
-                        # Sử dụng PowerShell để chạy lệnh SSH và docker pull
-                        $sshCommand = "ssh -i $env:EC2_KEY_PATH $env:EC2_USER@$env:EC2_SERVER 'docker pull $env:DOCKER_REGISTRY/$env:DOCKER_USER/$env:DOCKER_IMAGE:$env:BUILD_NUMBER && docker run -d -p 3000:3000 $env:DOCKER_REGISTRY/$env:DOCKER_USER/$env:DOCKER_IMAGE:$env:BUILD_NUMBER'"
-                        echo "Start SSH connection to EC2"
-                        Invoke-Expression $sshCommand
-                        echo "Running Docker pull command on EC2"
+                        # Kiểm tra kết nối SSH trước
+                        $sshTestCommand = "ssh -i $env:EC2_KEY_PATH $env:EC2_USER@$env:EC2_SERVER 'hostname'"
+                        echo "Testing SSH connection to EC2"
+                        $sshTestOutput = Invoke-Expression $sshTestCommand
+                        echo "SSH connection output: $sshTestOutput"
+                        
+                        if ($sshTestOutput -like "*ip-*") {
+                            echo "SSH connection successful, proceeding with Docker pull"
+                            # Tiến hành kéo và chạy Docker
+                            $sshCommand = "ssh -i $env:EC2_KEY_PATH $env:EC2_USER@$env:EC2_SERVER 'docker pull $env:DOCKER_REGISTRY/$env:DOCKER_USER/$env:DOCKER_IMAGE:$env:BUILD_NUMBER && docker run -d -p 3000:3000 $env:DOCKER_REGISTRY/$env:DOCKER_USER/$env:DOCKER_IMAGE:$env:BUILD_NUMBER'"
+                            Invoke-Expression $sshCommand
+                            echo "Docker pull and run command executed successfully"
+                        } else {
+                            echo "SSH connection failed, exiting deployment."
+                            exit 1
+                        }
                     '''
                 }
             }
