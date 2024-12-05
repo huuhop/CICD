@@ -6,7 +6,6 @@ pipeline {
         DOCKER_USER = 'huuhop1'  // Username là một giá trị cố định 
         EC2_SERVER = '3.25.88.171'  // Địa chỉ IP EC2 của bạn
         EC2_USER = 'ec2-user'  // Người dùng trên EC2 (ví dụ: ec2-user hoặc ubuntu)
-        EC2_KEY_PATH = 'C:/Users/HuuHop/Downloads/first-deploy.pem'  // Đường dẫn đến private key của EC2 (Windows path)
     }
     stages {
         stage('Clone') {
@@ -16,57 +15,66 @@ pipeline {
                 }
             }
         }
-        stage('Build Docker Image') {
+        // stage('Build Docker Image') {
+        //     steps {
+        //         script {
+        //             powershell '''
+        //                 echo "Building Docker image for $env:DOCKER_IMAGE"
+        //                 echo "DOCKER_REGISTRY: $env:DOCKER_REGISTRY"
+        //                 echo "DOCKER_USER: $env:DOCKER_USER"
+        //                 echo "BUILD_NUMBER: $env:BUILD_NUMBER"
+        //                 docker build -t "$env:DOCKER_REGISTRY/$env:DOCKER_USER/$env:DOCKER_IMAGE:$env:BUILD_NUMBER" .
+        //             '''
+        //         }
+        //     }
+        // }
+        // stage('Push Docker Image') {
+        //     steps {
+        //         script {
+        //             withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+        //                 powershell '''
+        //                     echo "Logging in to Docker Hub"
+        //                     docker login --username $env:DOCKER_USER --password $env:DOCKER_PASS
+        //                     docker push "$env:DOCKER_REGISTRY/$env:DOCKER_USER/$env:DOCKER_IMAGE:$env:BUILD_NUMBER"
+        //                 '''
+        //             }
+        //         }
+        //     }
+        // }
+         stage('SSH AWS EC2') {
             steps {
-                script {
-                    powershell '''
-                        echo "Building Docker image for $env:DOCKER_IMAGE"
-                        echo "DOCKER_REGISTRY: $env:DOCKER_REGISTRY"
-                        echo "DOCKER_USER: $env:DOCKER_USER"
-                        echo "BUILD_NUMBER: $env:BUILD_NUMBER"
-                        docker build -t "$env:DOCKER_REGISTRY/$env:DOCKER_USER/$env:DOCKER_IMAGE:$env:BUILD_NUMBER" .
-                    '''
+                sshagent(['ssh-remote']) {
+                    powershell """
+                        ssh -o StrictHostKeyChecking=no -l $env:EC2_USER@$env:EC2_SERVER touch text.txt
+                    """
                 }
             }
         }
-        stage('Push Docker Image') {
-            steps {
-                script {
-                    withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                        powershell '''
-                            echo "Logging in to Docker Hub"
-                            docker login --username $env:DOCKER_USER --password $env:DOCKER_PASS
-                            docker push "$env:DOCKER_REGISTRY/$env:DOCKER_USER/$env:DOCKER_IMAGE:$env:BUILD_NUMBER"
-                        '''
-                    }
-                }
-            }
-        }
-         stage('Deploy to EC2') {
-            steps {
-                script {
-                    powershell '''
-                        echo "SSH into EC2 and pull Docker image"
-                        # Kiểm tra kết nối SSH trước
-                        $sshTestCommand = "ssh -i $env:EC2_KEY_PATH $env:EC2_USER@$env:EC2_SERVER 'hostname'"
-                        echo "Testing SSH connection to EC2"
-                        $sshTestOutput = Invoke-Expression $sshTestCommand
-                        echo "SSH connection output: $sshTestOutput"
+        //  stage('Deploy to EC2') {
+        //     steps {
+        //         script {
+        //             powershell '''
+        //                 echo "SSH into EC2 and pull Docker image"
+        //                 # Kiểm tra kết nối SSH trước
+        //                 $sshTestCommand = "ssh -i $env:EC2_KEY_PATH $env:EC2_USER@$env:EC2_SERVER 'hostname'"
+        //                 echo "Testing SSH connection to EC2"
+        //                 $sshTestOutput = Invoke-Expression $sshTestCommand
+        //                 echo "SSH connection output: $sshTestOutput"
                         
-                        if ($sshTestOutput -like "*ip-*") {
-                            echo "SSH connection successful, proceeding with Docker pull"
-                            # Tiến hành kéo và chạy Docker
-                            $sshCommand = "ssh -i $env:EC2_KEY_PATH $env:EC2_USER@$env:EC2_SERVER 'docker pull $env:DOCKER_REGISTRY/$env:DOCKER_USER/$env:DOCKER_IMAGE:$env:BUILD_NUMBER && docker run -d -p 3000:3000 $env:DOCKER_REGISTRY/$env:DOCKER_USER/$env:DOCKER_IMAGE:$env:BUILD_NUMBER'"
-                            Invoke-Expression $sshCommand
-                            echo "Docker pull and run command executed successfully"
-                        } else {
-                            echo "SSH connection failed, exiting deployment."
-                            exit 1
-                        }
-                    '''
-                }
-            }
-        }
+        //                 if ($sshTestOutput -like "*ip-*") {
+        //                     echo "SSH connection successful, proceeding with Docker pull"
+        //                     # Tiến hành kéo và chạy Docker
+        //                     $sshCommand = "ssh -i $env:EC2_KEY_PATH $env:EC2_USER@$env:EC2_SERVER 'docker pull $env:DOCKER_REGISTRY/$env:DOCKER_USER/$env:DOCKER_IMAGE:$env:BUILD_NUMBER && docker run -d -p 3000:3000 $env:DOCKER_REGISTRY/$env:DOCKER_USER/$env:DOCKER_IMAGE:$env:BUILD_NUMBER'"
+        //                     Invoke-Expression $sshCommand
+        //                     echo "Docker pull and run command executed successfully"
+        //                 } else {
+        //                     echo "SSH connection failed, exiting deployment."
+        //                     exit 1
+        //                 }
+        //             '''
+        //         }
+        //     }
+        // }
     }
     post {
         success {
