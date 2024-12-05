@@ -10,6 +10,9 @@ COPY package*.json ./
 # Cài đặt dependencies
 RUN npm install --production
 
+# Cài đặt NestJS CLI toàn cục (global)
+RUN npm install -g @nestjs/cli
+
 # Sao chép mã nguồn vào container (sử dụng .dockerignore để loại trừ file không cần thiết)
 COPY . .
 
