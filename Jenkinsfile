@@ -48,8 +48,10 @@ pipeline {
                     powershell '''
                         echo "SSH into EC2 and pull Docker image"
                         # Sử dụng PowerShell để chạy lệnh SSH và docker pull
-                        $sshCommand = "ssh -i $env:EC2_KEY_PATH $env:EC2_USER@$env:EC2_SERVER `"docker pull $env:DOCKER_REGISTRY/$env:DOCKER_USER/$env:DOCKER_IMAGE:$env:BUILD_NUMBER && docker run -d -p 3000:3000 $env:DOCKER_REGISTRY/$env:DOCKER_USER/$env:DOCKER_IMAGE:$env:BUILD_NUMBER`""
+                        $sshCommand = "ssh -i $env:EC2_KEY_PATH $env:EC2_USER@$env:EC2_SERVER 'docker pull $env:DOCKER_REGISTRY/$env:DOCKER_USER/$env:DOCKER_IMAGE:$env:BUILD_NUMBER && docker run -d -p 3000:3000 $env:DOCKER_REGISTRY/$env:DOCKER_USER/$env:DOCKER_IMAGE:$env:BUILD_NUMBER'"
+                        echo "Start SSH connection to EC2"
                         Invoke-Expression $sshCommand
+                        echo "Running Docker pull command on EC2"
                     '''
                 }
             }
