@@ -127,13 +127,12 @@ pipeline {
     agent any
     environment {
         EC2_SERVER = '3.25.88.171'  // Địa chỉ IP EC2 của bạn
-        EC2_USER = 'ec2-user'  // Người dùng trên EC2 (ví dụ: ec2-user hoặc ubuntu)
     }
     stages {
         stage('Clone') {
             steps {
                 script {
-                    git 'https://github.com/huuhop/CICD.git'  
+                    git 'https://github.com/huuhop/CICD.git'
                 }
             }
         }
@@ -141,17 +140,11 @@ pipeline {
             steps {
                 script {
                     withCredentials([sshUserPrivateKey(credentialsId: 'ssh-remote', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')]) {
-                        // Sử dụng Git Bash hoặc công cụ tương thích với Unix để chạy SSH
-                        bat """
-                            @echo off
-                            REM In ra thông tin về SSH User và Server
-                            echo Using SSH Key for: %SSH_USER%@%EC2_SERVER%
-                            
-                            REM Cấp quyền cho SSH key nếu cần thiết
-                            icacls %SSH_KEY% /grant:r "%USERDOMAIN%\\%USERNAME%:(R)"
-
-                            REM Kết nối đến EC2 và chạy lệnh (sử dụng Git Bash)
-                            "C:\\Program Files\\Git\\bin\\bash.exe" -c "ssh -o StrictHostKeyChecking=no -i %SSH_KEY% %SSH_USER%@%EC2_SERVER% 'touch text.txt'"
+                        echo "Using SSH Key for: \$SSH_USER@$EC2_SERVER"
+                        
+                        // Kết nối và chạy lệnh trên EC2
+                        sh """
+                            ssh -o StrictHostKeyChecking=no -i \$SSH_KEY \$SSH_USER@$EC2_SERVER 'touch text.txt'
                         """
                     }
                 }
