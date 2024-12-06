@@ -140,7 +140,6 @@ pipeline {
             steps {
                 script {
                     withCredentials([sshUserPrivateKey(credentialsId: 'ssh-remote-1', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')]) {
-                        // Debugging: Kiểm tra xem key đã được lấy đúng chưa
                         echo "SSH User: $SSH_USER"
                         echo "SSH Key: $SSH_KEY"
 
