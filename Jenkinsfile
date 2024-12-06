@@ -139,17 +139,21 @@ pipeline {
         stage('SSH AWS EC2') {
             steps {
                 script {
-                    withCredentials([sshUserPrivateKey(credentialsId: 'ssh-remote', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')]) {
-                        // Avoid printing SSH Key to the logs for security reasons
-                        echo "SSH User: $SSH_USER"
+                    // withCredentials([sshUserPrivateKey(credentialsId: 'ssh-remote', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')]) {
+                    //     // Avoid printing SSH Key to the logs for security reasons
+                    //     echo "SSH User: $SSH_USER"
 
-                        // Use the key directly in the SSH command without extra 'echo'
-                        // Ensure the key path is used correctly in the SSH command
-                        bat """
-                            echo Starting SSH connection to EC2
-                            ssh -o StrictHostKeyChecking=no -i $SSH_KEY $SSH_USER@$EC2_SERVER 'touch text.txt'
-                        """
-                    }
+                    //     // Use the key directly in the SSH command without extra 'echo'
+                    //     // Ensure the key path is used correctly in the SSH command
+                    //     bat """
+                    //         echo Starting SSH connection to EC2
+                    //         ssh -o StrictHostKeyChecking=no -i $SSH_KEY $SSH_USER@$EC2_SERVER 'touch text.txt'
+                    //     """
+                    // }
+                    bat """
+                        echo SSH Key Path: C:/Users/HuuHop/Downloads/first-deploy.pem
+                        ssh -o StrictHostKeyChecking=no -i \"C:/Users/HuuHop/Downloads/first-deploy.pem\" ec2-user@$EC2_SERVER 'touch text.txt'
+                    """
                 }
             }
         }
