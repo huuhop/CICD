@@ -140,14 +140,16 @@ pipeline {
         stage('SSH AWS EC2') {
             steps {
                 script {
-                    withCredentials([file(credentialsId: 'ssh-remote', variable: 'SSH_KEY')]) {
+                    withCredentials([sshUserPrivateKey(credentialsId: 'ssh-remote', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')]) {
                         powershell """
-                            echo $SSH_KEY
-                            # Cấp quyền cho khóa SSH nếu cần thiết
+                            # In ra thông tin về SSH User và Server
+                            Write-Host "Using SSH Key for: $SSH_USER@$EC2_SERVER"
+                            
+                            # Cấp quyền cho SSH key nếu cần thiết
                             icacls $SSH_KEY /grant:r "${env.USERDOMAIN}\\${env.USERNAME}:(R)"
 
                             # Kết nối đến EC2 và chạy lệnh
-                            ssh -o StrictHostKeyChecking=no -i $SSH_KEY $EC2_USER@$EC2_SERVER 'touch text.txt'
+                            ssh -o StrictHostKeyChecking=no -i $SSH_KEY $SSH_USER@$EC2_SERVER 'touch text.txt'
                         """
                     }
                 }
