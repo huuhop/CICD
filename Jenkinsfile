@@ -86,6 +86,43 @@
 //     }
 // }
 
+// pipeline {
+//     agent any
+//     environment {
+//         EC2_SERVER = '3.25.88.171'  // Địa chỉ IP EC2 của bạn
+//         EC2_USER = 'ec2-user'  // Người dùng trên EC2 (ví dụ: ec2-user hoặc ubuntu)
+//     }
+//     stages {
+//         stage('Clone') {
+//             steps {
+//                 script {
+//                     git 'https://github.com/huuhop/CICD.git'  
+//                 }
+//             }
+//         }
+//         stage('SSH AWS EC2') {
+//             steps {
+//                 sshagent(['ssh-remote']) {
+//                     script {
+//                         // Chạy lệnh SSH
+//                         sh """
+//                             ssh -o StrictHostKeyChecking=no -l $EC2_USER $EC2_SERVER touch text.txt
+//                         """
+//                     }
+//                 }
+//             }
+//         }
+//     }
+//     post {
+//         success {
+//             echo 'Pipeline hoàn tất thành công!'
+//         }
+//         failure {
+//             echo 'Pipeline gặp lỗi!'
+//         }
+//     }
+// }
+
 pipeline {
     agent any
     environment {
@@ -100,39 +137,17 @@ pipeline {
                 }
             }
         }
-        // stage('SSH AWS EC2') {
-        //     steps {
-        //         sshagent(['ssh-remote']) {
-        //             script {
-        //                 // Chạy lệnh SSH
-        //                 sh """
-        //                     ssh -o StrictHostKeyChecking=no -l $EC2_USER@$EC2_SERVER touch text.txt
-        //                 """
-        //             }
-        //         }
-        //     }
-        // }
         stage('SSH AWS EC2') {
             steps {
                 script {
-                    // Set up SSH key manually
                     withCredentials([file(credentialsId: 'ssh-remote', variable: 'SSH_KEY')]) {
-                        sh """
-                            echo $SSH_KEY
-                            chmod 600 $SSH_KEY
-                            ssh -o StrictHostKeyChecking=no -i $SSH_KEY $EC2_USER@$EC2_SERVER touch text.txt
-                        """
-
                         powershell """
-                            # Set quyền cho file key SSH
-                            echo 1111
-                            $keyPath = '${SSH_KEY}'
-                            echo  $keyPath
-                            echo  $keyPath $EC2_USER@$EC2_SERVER
-                            icacls $keyPath /grant:r "${env.USERDOMAIN}\\${env.USERNAME}:(R)"
-                            
-                            # Thực hiện SSH kết nối đến EC2
-                            ssh -o StrictHostKeyChecking=no -i $keyPath $EC2_USER@$EC2_SERVER 'touch text1.txt'
+                            echo $SSH_KEY
+                            # Cấp quyền cho khóa SSH nếu cần thiết
+                            icacls $SSH_KEY /grant:r "${env.USERDOMAIN}\\${env.USERNAME}:(R)"
+
+                            # Kết nối đến EC2 và chạy lệnh
+                            ssh -o StrictHostKeyChecking=no -i $SSH_KEY $EC2_USER@$EC2_SERVER 'touch text.txt'
                         """
                     }
                 }
