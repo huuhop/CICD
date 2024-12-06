@@ -139,12 +139,12 @@ pipeline {
         stage('SSH AWS EC2') {
             steps {
                 script {
-                    withCredentials([sshUserPrivateKey(credentialsId: 'ssh-remote', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')]) {
+                    withCredentials([sshUserPrivateKey(credentialsId: 'ssh-remote-1', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')]) {
                         // Avoid printing SSH Key to the logs for security reasons
                         echo "SSH User: $SSH_USER"
 
                         bat """
-                            echo Starting SSH connection to EC2
+                           echo Starting SSH connection to EC2
                             ssh -o StrictHostKeyChecking=no -i $SSH_KEY $SSH_USER@$EC2_SERVER 'touch text.txt'
                         """
                     }
