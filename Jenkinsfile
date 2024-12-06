@@ -140,12 +140,12 @@ pipeline {
             steps {
                 script {
                     withCredentials([sshUserPrivateKey(credentialsId: 'ssh-remote-1', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')]) {
-                        echo "SSH User: $SSH_USER"
-                        echo "SSH Key: $SSH_KEY"
-
                         bat """
                             echo Starting SSH connection to EC2
                             ssh -o StrictHostKeyChecking=no -i $SSH_KEY $SSH_USER@$EC2_SERVER 'touch text.txt'
+
+                             echo "Sleeping for 5 minutes..."
+                             sleep time: 5, unit: 'MINUTES'
                         """
                     }
                 }
