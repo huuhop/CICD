@@ -128,6 +128,7 @@ pipeline {
     environment {
         EC2_SERVER = '3.25.88.171'  // Địa chỉ IP EC2 của bạn
         PEM_FILE_PATH = 'C:\\Users\\HuuHop\\Downloads\\first-deploy.pem' // Đường dẫn tới file PEM
+        JENKINS_USER = 'Jenkins' // Tên người dùng chạy Jenkins, thay đổi theo hệ thống của bạn nếu khác
     }
     stages {
         stage('Clone') {
@@ -140,13 +141,13 @@ pipeline {
         stage('Set Permissions and SSH AWS EC2') {
             steps {
                 script {
-                    // Thêm quyền cho file PEM
+                    // Thêm quyền cho file PEM cho người dùng Jenkins
                     bat """
                         echo Cấp quyền truy cập cho file PEM...
-                        icacls "${PEM_FILE_PATH}" /inheritance:r /grant:r %USERNAME%:R
+                        icacls "${PEM_FILE_PATH}" /inheritance:r /grant:r ${JENKINS_USER}:R
                     """
                     
-                    // Debug: Kiểm tra xem quyền đã được cấp hay chưa
+                    // Debug: Kiểm tra quyền đã được cấp hay chưa
                     bat """
                         echo Kiểm tra quyền truy cập file PEM...
                         icacls "${PEM_FILE_PATH}"
