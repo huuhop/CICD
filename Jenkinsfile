@@ -139,14 +139,20 @@ pipeline {
         stage('SSH AWS EC2') {
             steps {
                 script {
-                    withCredentials([sshUserPrivateKey(credentialsId: 'ssh-remote-1', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')]) {
+                    withCredentials([sshUserPrivateKey(credentialsId: 'ssh-remote-2', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')]) {
                         bat """
                             echo Starting SSH connection to EC2
+                            REM Thiết lập quyền truy cập cho khóa SSH
+                            icacls $SSH_KEY /inheritance:r
+                            icacls $SSH_KEY /grant:r SYSTEM:F
+                            icacls $SSH_KEY /grant:r "BUILTIN\\Administrators":F
+                            REM Sử dụng ssh để kết nối với EC2 và tạo file text.txt
                             ssh -o StrictHostKeyChecking=no -i $SSH_KEY $SSH_USER@$EC2_SERVER 'touch text.txt'
                         """
                         
-                             echo "Sleeping for 5 minutes..."
-                             sleep time: 5, unit: 'MINUTES'
+                        // Nghỉ 5 phút sau khi thực hiện lệnh SSH
+                        echo "Sleeping for 5 minutes..."
+                        sleep time: 5, unit: 'MINUTES'
                     }
                 }
             }
