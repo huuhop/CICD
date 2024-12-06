@@ -140,20 +140,14 @@ pipeline {
             steps {
                 script {
                     withCredentials([sshUserPrivateKey(credentialsId: 'ssh-remote', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')]) {
-                        echo "SSH Key path: $SSH_KEY"
+                        // Avoid printing SSH Key to the logs for security reasons
                         echo "SSH User: $SSH_USER"
-                        
-                        // Ensure the key is accessible by echoing it
-                        echo "SSH Key path is: $SSH_KEY"
-                        // Convert $SSH_KEY to absolute path if necessary
-                        def keyPath = bat(script: 'echo %SSH_KEY%', returnStdout: true).trim()
-                            // Print the keyPath value
-                        echo "Key Path: $keyPath"
 
-                        // Using SSH command to touch a file on EC2
+                        // Use the key directly in the SSH command without extra 'echo'
+                        // Ensure the key path is used correctly in the SSH command
                         bat """
                             echo Starting SSH connection to EC2
-                            ssh -o StrictHostKeyChecking=no -i \"$keyPath\" $SSH_USER@$EC2_SERVER 'touch text.txt'
+                            ssh -o StrictHostKeyChecking=no -i $SSH_KEY $SSH_USER@$EC2_SERVER 'touch text.txt'
                         """
                     }
                 }
