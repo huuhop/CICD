@@ -141,9 +141,10 @@ pipeline {
                 script {
                     withCredentials([sshUserPrivateKey(credentialsId: 'ssh-remote', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')]) {
                         echo "Using SSH Key for: \$SSH_USER@$EC2_SERVER"
-                        
-                        // Kết nối và chạy lệnh trên EC2
-                        sh """
+                        echo "$SSH_KEY"
+                         echo "$SSH_USER"
+                        // Kết nối và chạy lệnh trên EC2 (dùng PowerShell thay vì sh)
+                        bat """
                             ssh -o StrictHostKeyChecking=no -i \$SSH_KEY \$SSH_USER@$EC2_SERVER 'touch text.txt'
                         """
                     }
