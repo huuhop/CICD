@@ -127,8 +127,6 @@ pipeline {
     agent any
     environment {
         EC2_SERVER = '3.25.88.171'  // Địa chỉ IP EC2 của bạn
-        PEM_FILE_PATH = 'C:\\Users\\HuuHop\\Downloads\\first-deploy.pem' // Đường dẫn tới file PEM
-        JENKINS_USER = 'Jenkins' // Tên người dùng chạy Jenkins, thay đổi theo hệ thống của bạn nếu khác
     }
     stages {
         stage('Clone') {
@@ -138,26 +136,18 @@ pipeline {
                 }
             }
         }
-        stage('Set Permissions and SSH AWS EC2') {
+        stage('SSH AWS EC2') {
             steps {
                 script {
-                    // Thêm quyền cho file PEM cho người dùng Jenkins
-                    bat """
-                        echo Cấp quyền truy cập cho file PEM...
-                        icacls "${PEM_FILE_PATH}" /inheritance:r /grant:r ${JENKINS_USER}:R
-                    """
-                    
-                    // Debug: Kiểm tra quyền đã được cấp hay chưa
-                    bat """
-                        echo Kiểm tra quyền truy cập file PEM...
-                        icacls "${PEM_FILE_PATH}"
-                    """
-                    
-                    // Thực thi lệnh SSH
-                    bat """
-                        echo Bắt đầu kết nối SSH tới EC2...
-                        ssh -v -o StrictHostKeyChecking=no -i "${PEM_FILE_PATH}" ec2-user@$EC2_SERVER 'touch text.txt'
-                    """
+                    withCredentials([sshUserPrivateKey(credentialsId: 'ssh-remote', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')]) {
+                        // Avoid printing SSH Key to the logs for security reasons
+                        echo "SSH User: $SSH_USER"
+
+                        bat """
+                            echo Starting SSH connection to EC2
+                            ssh -o StrictHostKeyChecking=no -i $SSH_KEY $SSH_USER@$EC2_SERVER 'touch text.txt'
+                        """
+                    }
                 }
             }
         }
