@@ -147,7 +147,7 @@ pipeline {
                             icacls $SSH_KEY /grant:r SYSTEM:F
                             icacls $SSH_KEY /grant:r "BUILTIN\\Administrators":F
                             REM Sử dụng ssh để kết nối với EC2 và tạo file text.txt
-                            ssh -o StrictHostKeyChecking=no -i $SSH_KEY $SSH_USER@$EC2_SERVER 'touch text.txt'
+                            ssh -o StrictHostKeyChecking=no -i $SSH_KEY $SSH_USER@$EC2_SERVER touch text.txt
                         """
                         
                         // Nghỉ 5 phút sau khi thực hiện lệnh SSH
