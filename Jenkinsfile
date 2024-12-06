@@ -100,13 +100,39 @@ pipeline {
                 }
             }
         }
+        // stage('SSH AWS EC2') {
+        //     steps {
+        //         sshagent(['ssh-remote']) {
+        //             script {
+        //                 // Chạy lệnh SSH
+        //                 sh """
+        //                     ssh -o StrictHostKeyChecking=no -l $EC2_USER@$EC2_SERVER touch text.txt
+        //                 """
+        //             }
+        //         }
+        //     }
+        // }
         stage('SSH AWS EC2') {
             steps {
-                sshagent(['ssh-remote']) {
-                    script {
-                        // Chạy lệnh SSH
+                script {
+                    // Set up SSH key manually
+                    withCredentials([file(credentialsId: 'ssh-remote', variable: 'SSH_KEY')]) {
                         sh """
-                            ssh -o StrictHostKeyChecking=no -l $EC2_USER@$EC2_SERVER touch text.txt
+                            echo $SSH_KEY
+                            chmod 600 $SSH_KEY
+                            ssh -o StrictHostKeyChecking=no -i $SSH_KEY $EC2_USER@$EC2_SERVER touch text.txt
+                        """
+
+                        powershell """
+                            # Set quyền cho file key SSH
+                            echo 1111
+                            $keyPath = '${SSH_KEY}'
+                            echo  $keyPath
+                            echo  $keyPath $EC2_USER@$EC2_SERVER
+                            icacls $keyPath /grant:r "${env.USERDOMAIN}\\${env.USERNAME}:(R)"
+                            
+                            # Thực hiện SSH kết nối đến EC2
+                            ssh -o StrictHostKeyChecking=no -i $keyPath $EC2_USER@$EC2_SERVER 'touch text1.txt'
                         """
                     }
                 }
