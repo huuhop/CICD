@@ -127,6 +127,7 @@ pipeline {
     agent any
     environment {
         EC2_SERVER = '3.25.88.171'  // Địa chỉ IP EC2 của bạn
+        PEM_FILE_PATH = 'C:\\Users\\HuuHop\\Downloads\\first-deploy.pem' // Đường dẫn tới file PEM
     }
     stages {
         stage('Clone') {
@@ -136,12 +137,25 @@ pipeline {
                 }
             }
         }
-        stage('SSH AWS EC2') {
+        stage('Set Permissions and SSH AWS EC2') {
             steps {
                 script {
+                    // Thêm quyền cho file PEM
                     bat """
-                        echo SSH Key Path: C:\\Users\\HuuHop\\Downloads\\first-deploy.pem
-                        ssh -v -o StrictHostKeyChecking=no -i C:\\Users\\HuuHop\\Downloads\\first-deploy.pem ec2-user@$EC2_SERVER 'touch text.txt'
+                        echo Cấp quyền truy cập cho file PEM...
+                        icacls "${PEM_FILE_PATH}" /inheritance:r /grant:r %USERNAME%:R
+                    """
+                    
+                    // Debug: Kiểm tra xem quyền đã được cấp hay chưa
+                    bat """
+                        echo Kiểm tra quyền truy cập file PEM...
+                        icacls "${PEM_FILE_PATH}"
+                    """
+                    
+                    // Thực thi lệnh SSH
+                    bat """
+                        echo Bắt đầu kết nối SSH tới EC2...
+                        ssh -v -o StrictHostKeyChecking=no -i "${PEM_FILE_PATH}" ec2-user@$EC2_SERVER 'touch text.txt'
                     """
                 }
             }
