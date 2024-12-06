@@ -141,15 +141,17 @@ pipeline {
             steps {
                 script {
                     withCredentials([sshUserPrivateKey(credentialsId: 'ssh-remote', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')]) {
-                        sh """
-                            # In ra thông tin về SSH User và Server
-                            echo "Using SSH Key for: \$SSH_USER@$EC2_SERVER"
+                        // Sử dụng Git Bash hoặc công cụ tương thích với Unix để chạy SSH
+                        bat """
+                            @echo off
+                            REM In ra thông tin về SSH User và Server
+                            echo Using SSH Key for: %SSH_USER%@%EC2_SERVER%
                             
-                            # Cấp quyền cho SSH key nếu cần thiết
-                            icacls \$SSH_KEY /grant:r "\${env.USERDOMAIN}\\\${env.USERNAME}:(R)"
+                            REM Cấp quyền cho SSH key nếu cần thiết
+                            icacls %SSH_KEY% /grant:r "%USERDOMAIN%\\%USERNAME%:(R)"
 
-                            # Kết nối đến EC2 và chạy lệnh
-                            ssh -o StrictHostKeyChecking=no -i \$SSH_KEY \$SSH_USER@$EC2_SERVER 'touch text.txt'
+                            REM Kết nối đến EC2 và chạy lệnh (sử dụng Git Bash)
+                            "C:\\Program Files\\Git\\bin\\bash.exe" -c "ssh -o StrictHostKeyChecking=no -i %SSH_KEY% %SSH_USER%@%EC2_SERVER% 'touch text.txt'"
                         """
                     }
                 }
