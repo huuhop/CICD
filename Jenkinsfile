@@ -106,7 +106,7 @@ pipeline {
                     script {
                         // Chạy lệnh SSH
                         sh """
-                            ssh -o StrictHostKeyChecking=no -l $EC2_USER $EC2_SERVER touch text.txt
+                            ssh -o StrictHostKeyChecking=no -l $EC2_USER@$EC2_SERVER touch text.txt
                         """
                     }
                 }
