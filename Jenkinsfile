@@ -140,11 +140,12 @@ pipeline {
             steps {
                 script {
                     withCredentials([sshUserPrivateKey(credentialsId: 'ssh-remote-1', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')]) {
-                        // Avoid printing SSH Key to the logs for security reasons
+                        // Debugging: Kiểm tra xem key đã được lấy đúng chưa
                         echo "SSH User: $SSH_USER"
+                        echo "SSH Key: $SSH_KEY"
 
                         bat """
-                           echo Starting SSH connection to EC2
+                            echo Starting SSH connection to EC2
                             ssh -o StrictHostKeyChecking=no -i $SSH_KEY $SSH_USER@$EC2_SERVER 'touch text.txt'
                         """
                     }
