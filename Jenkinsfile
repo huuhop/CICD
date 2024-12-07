@@ -46,20 +46,23 @@ pipeline {
                 script {
                     withCredentials([sshUserPrivateKey(credentialsId: 'ssh-remote-2', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER'),
                                     usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                        powershell '''
-                            echo "Starting SSH connection to EC2"
-                            
-                            # Thiết lập quyền truy cập cho khóa SSH
-                            icacls $env:SSH_KEY /inheritance:r
-                            icacls $env:SSH_KEY /grant:r SYSTEM:F
-                            icacls $env:SSH_KEY /grant:r "BUILTIN\\Administrators":F
-                            
-                            # Kết nối SSH và thực hiện pull + run Docker
-                            ssh -o StrictHostKeyChecking=no -i $env:SSH_KEY $env:SSH_USER@$env:EC2_SERVER "
-                                docker login --username $env:DOCKER_USER --password $env:DOCKER_PASS 
+                            powershell '''
+                                echo "Starting SSH connection to EC2"
                                 
-                            "
-                        '''
+                                # Thiết lập quyền truy cập cho khóa SSH
+                                icacls $env:SSH_KEY /inheritance:r
+                                icacls $env:SSH_KEY /grant:r SYSTEM:F
+                                icacls $env:SSH_KEY /grant:r "BUILTIN\\Administrators":F
+                                
+                                # Kết nối SSH và thực hiện pull + run Docker
+                                ssh -o StrictHostKeyChecking=no -i $env:SSH_KEY $env:SSH_USER@$env:EC2_SERVER "
+                                    docker login --username ${env:DOCKER_USER} --password ${env:DOCKER_PASS} &&
+                                    docker pull ${env:DOCKER_REGISTRY}/${env:DOCKER_USER}/${env:DOCKER_IMAGE}:${env:BUILD_NUMBER} &&
+                                    docker stop ${env:DOCKER_IMAGE} || true &&
+                                    docker rm ${env:DOCKER_IMAGE} || true &&
+                                    docker run -d --name ${env:DOCKER_IMAGE} -p 3000:3000 ${env:DOCKER_REGISTRY}/${env:DOCKER_USER}/${env:DOCKER_IMAGE}:${env:BUILD_NUMBER}
+                                "
+                            '''
                     }
                 }
             }
