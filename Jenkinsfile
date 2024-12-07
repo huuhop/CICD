@@ -56,11 +56,8 @@ pipeline {
                             
                             # Kết nối SSH và thực hiện pull + run Docker
                             ssh -o StrictHostKeyChecking=no -i $env:SSH_KEY $env:SSH_USER@$env:EC2_SERVER "
-                                docker login --username $env:DOCKER_USER --password $env:DOCKER_PASS &&
-                                docker pull $DOCKER_REGISTRY/$DOCKER_USER/$DOCKER_IMAGE:$BUILD_NUMBER &&
-                                docker stop $DOCKER_IMAGE || true &&
-                                docker rm $DOCKER_IMAGE || true &&
-                                docker run -d --name $DOCKER_IMAGE -p 3000:3000 $DOCKER_REGISTRY/$DOCKER_USER/$DOCKER_IMAGE:$BUILD_NUMBER 
+                                docker login --username $env:DOCKER_USER --password $env:DOCKER_PASS 
+                                
                             "
                         '''
                     }
