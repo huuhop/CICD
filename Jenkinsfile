@@ -20,12 +20,11 @@ pipeline {
                 script {
                     powershell '''
                         echo "Building Docker image"
-                        echo "DOCKER_REGISTRY: $env:DOCKER_REGISTRY"
-                        echo "DOCKER_USER: $env:DOCKER_USER"
-                        echo "DOCKER_IMAGE: $env:DOCKER_IMAGE"
-                        echo "BUILD_NUMBER: $env:BUILD_NUMBER"
-                        docker build -t "$env:DOCKER_REGISTRY/$env:DOCKER_USER/$env:DOCKER_IMAGE:$env:BUILD_NUMBER" .
-                        echo "Docker build command: docker $env:DOCKER_REGISTRY/$env:DOCKER_USER/$env:DOCKER_IMAGE:$env:BUILD_NUMBER"
+                        echo "DOCKER_REGISTRY: ${env:DOCKER_REGISTRY}"
+                        echo "DOCKER_USER: ${env:DOCKER_USER}"
+                        echo "DOCKER_IMAGE: ${env:DOCKER_IMAGE}"
+                        echo "BUILD_NUMBER: ${env:BUILD_NUMBER}"
+                        docker build -t "${env:DOCKER_REGISTRY}/${env:DOCKER_USER}/${env:DOCKER_IMAGE}:${env:BUILD_NUMBER}" .
                     '''
                 }
             }
@@ -36,9 +35,8 @@ pipeline {
                     withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                         powershell '''
                             echo "Logging in to Docker Hub"
-                            docker login --username $env:DOCKER_USER --password $env:DOCKER_PASS
-                            docker push "$env:DOCKER_REGISTRY/$env:DOCKER_USER/$env:DOCKER_IMAGE:$env:BUILD_NUMBER"
-                            echo "Docker push command: docker $env:DOCKER_REGISTRY/$env:DOCKER_USER/$env:DOCKER_IMAGE:$env:BUILD_NUMBER"
+                            docker login --username ${env:DOCKER_USER} --password ${env:DOCKER_PASS}
+                            docker push "${env:DOCKER_REGISTRY}/${env:DOCKER_USER}/${env:DOCKER_IMAGE}:${env:BUILD_NUMBER}"
                         '''
                     }
                 }
@@ -53,17 +51,17 @@ pipeline {
                             echo "Starting SSH connection to EC2"
                             
                             # Thiết lập quyền truy cập cho khóa SSH
-                            icacls $env:SSH_KEY /inheritance:r
-                            icacls $env:SSH_KEY /grant:r SYSTEM:F
-                            icacls $env:SSH_KEY /grant:r "BUILTIN\\Administrators":F
+                            icacls ${env:SSH_KEY} /inheritance:r
+                            icacls ${env:SSH_KEY} /grant:r SYSTEM:F
+                            icacls ${env:SSH_KEY} /grant:r "BUILTIN\\Administrators":F
                             
                             # Kết nối SSH và thực hiện pull + run Docker
-                            ssh -o StrictHostKeyChecking=no -i $env:SSH_KEY $env:SSH_USER@$env:EC2_SERVER "
-                                docker login --username $env:DOCKER_USER --password $env:DOCKER_PASS &&
-                                docker pull $DOCKER_REGISTRY/$DOCKER_USER/$DOCKER_IMAGE:$BUILD_NUMBER &&
-                                docker stop $DOCKER_IMAGE || true &&
-                                docker rm $DOCKER_IMAGE || true &&
-                                docker run -d --name $DOCKER_IMAGE -p 3000:3000 $DOCKER_REGISTRY/$DOCKER_USER/$DOCKER_IMAGE:$BUILD_NUMBER 
+                            ssh -o StrictHostKeyChecking=no -i ${env:SSH_KEY} ${env:SSH_USER}@${env:EC2_SERVER} "
+                                docker login --username ${env:DOCKER_USER} --password ${env:DOCKER_PASS} &&
+                                docker pull ${env:DOCKER_REGISTRY}/${env:DOCKER_USER}/${env:DOCKER_IMAGE}:${env:BUILD_NUMBER} &&
+                                docker stop ${env:DOCKER_IMAGE} || true &&
+                                docker rm ${env:DOCKER_IMAGE} || true &&
+                                docker run -d --name ${env:DOCKER_IMAGE} -p 3000:3000 ${env:DOCKER_REGISTRY}/${env:DOCKER_USER}/${env:DOCKER_IMAGE}:${env:BUILD_NUMBER}
                             "
                         '''
                     }
